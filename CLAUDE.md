@@ -16,9 +16,11 @@ This repo lives in a Dropbox-synced folder. The mount allows creating and modify
 
 Each commit made this way still leaves one new stale `.lock` file behind, since git always tries and fails to clean up after itself — that's expected, not a sign something's wrong. Don't spend time trying to `rm` it; it can't be removed through this mount. The workaround above routes around each stuck file rather than needing it gone.
 
-## Never `git push` from this sandbox
+## Never `git push` from this sandbox — and `git fetch`/`git pull` won't work either
 
-No credentials are available here. Committing locally and stopping there is correct every time — leave the push for the user to run from their own machine.
+No credentials are available here: `git fetch` fails with `fatal: could not read Username for 'https://github.com': No such device or address`, and `git push` would fail the same way. Committing locally and stopping there is correct every time — leave push/pull for the user to run from their own machine.
+
+**Don't mistake a Dropbox sync for a fetch.** Because the whole `.git` directory lives inside the same Dropbox-synced folder as the working tree, `.git/refs/remotes/origin/<branch>` can appear to change between sessions — or even mid-session — with no `git fetch` or `git push` ever run from here. That's Dropbox syncing the user's own local git activity (a real push or fetch they ran on their own machine) into this shared `.git` folder, not evidence of a network operation happening in this sandbox. If `origin/<branch>` looks unexpectedly ahead, behind, or different from what this session's own commits would produce, that's the expected explanation — don't spend time treating it as a bug or trying to verify it by fetching (verify against the real GitHub repo in a browser instead, if it matters).
 
 ## `internal/` is private and gitignored
 
