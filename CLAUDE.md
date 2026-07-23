@@ -31,7 +31,8 @@ No credentials are available here: `git fetch` fails with `fatal: could not read
 `concept.md` §6 lists the build order. As of 2026-07-23:
 
 - **(a) elicitation layer** — done (`elicitation.md`).
-- **(b) evidence-gathering modules** — partial: fragmented-small-employer module done (`fragmented-employer-module.md`); signal-fusion module, the other reference implementation §6 step (b) calls for, not started.
-- **(c) verification/escalation policy doc, (d) recombination/tracking schema template, (e) SKILL.md assembly, (f) plain-repo sanity check** — not started.
+- **(b) evidence-gathering modules** — done: fragmented-small-employer module (`fragmented-employer-module.md`) and signal-fusion module (`signal-fusion-module.md`), both reference implementations §6 step (b) calls for.
+- **(c) verification/escalation policy doc** — done (`verification-escalation-policy.md`) — generalizes architecture.md §1.3 into the same fixed template-instantiation format; the two module files' own escalation-ladder instantiations (`fragmented-employer-module.md` §6, `signal-fusion-module.md` §2) now point back to it as the canonical general form rather than standing as independent policies.
+- **(d) recombination/tracking schema template, (e) SKILL.md assembly, (f) plain-repo sanity check** — not started. Note for step (d): four open questions across the existing reference docs (`fragmented-employer-module.md` §10, `signal-fusion-module.md` §3 and §7, `verification-escalation-policy.md` §7) all converge on the same undecided piece — a closed confidence-label vocabulary for the tracking schema — and should be resolved together as one decision, not four.
 
 Update this list as work lands so a new session doesn't have to reconstruct status from `git log`.
