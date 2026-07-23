@@ -1,6 +1,6 @@
 # JobMux — Architecture
 
-**Companion to `structured-job-search-skill-concept.md`.** That file holds the background, the differentiated-problem framing, the use cases, and the naming decision. This file holds the system design: the reusable layers, and the format/infrastructure options. This file states the current design as decided — it does not narrate how it got here. When a decision changes, rewrite the relevant section in place rather than appending a dated correction. Alternatives seriously considered and rejected are kept as standing reasoning, not as a story about when they were rejected.
+**Companion to `concept.md`.** That file holds the background, the differentiated-problem framing, the use cases, and the naming decision. This file holds the system design: the reusable layers, and the format/infrastructure options. This file states the current design as decided — it does not narrate how it got here. When a decision changes, rewrite the relevant section in place rather than appending a dated correction. Alternatives seriously considered and rejected are kept as standing reasoning, not as a story about when they were rejected.
 
 ## 1. Reusable layers
 

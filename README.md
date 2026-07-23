@@ -46,4 +46,4 @@ None of this is designed in full yet — directions, not current features.
 
 ## Status
 
-Design/architecture phase — no implementation yet. Current plan: Claude Skills, with subagent-based model tiering and Cowork's scheduled-tasks primitive handling autonomy and recheck cadence — no custom backend appears necessary for what's currently envisioned. Full technical design lives in `structured-job-search-skill-concept.md` (background, landscape, use cases, naming) and `structured-job-search-skill-architecture.md` (the four reusable layers, format and infrastructure options).
+Design/architecture phase — no implementation yet. Current plan: Claude Skills, with subagent-based model tiering and Cowork's scheduled-tasks primitive handling autonomy and recheck cadence — no custom backend appears necessary for what's currently envisioned. Full technical design lives in `concept.md` (background, landscape, use cases, naming) and `architecture.md` (the four reusable layers, format and infrastructure options).
