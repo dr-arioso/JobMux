@@ -1,6 +1,6 @@
 # CLAUDE.md — JobMux session notes
 
-Environment and tooling notes for any session working in this repo — not design content. For the actual design, read `design/concept.md` and `design/architecture.md`; `design/concept.md` §6 has the bootstrapping instructions for a new session.
+Environment and tooling notes for any session working in this repo — not design content. For the actual design, read `design/concept.md` and `design/architecture.md`; `design/concept.md` §6 has the bootstrapping instructions for a new session. For why the repo or the build order looks the way it does, check `decisions/` (an ADR log) before assuming something is arbitrary or unexplained.
 
 ## Git in this repo — known issue and workaround
 
@@ -39,6 +39,6 @@ No credentials are available here: `git fetch` fails with `fatal: could not read
 - **(a) elicitation layer** — done (`reference/elicitation.md`).
 - **(b) evidence-gathering modules** — done: fragmented-small-employer module (`reference/fragmented-employer-module.md`) and signal-fusion module (`reference/signal-fusion-module.md`), both reference implementations §6 step (b) calls for.
 - **(c) verification/escalation policy doc** — done (`reference/verification-escalation-policy.md`) — generalizes `design/architecture.md` §1.3 into the same fixed template-instantiation format; the two module files' own escalation-ladder instantiations (`reference/fragmented-employer-module.md` §6, `reference/signal-fusion-module.md` §2) now point back to it as the canonical general form rather than standing as independent policies.
-- **(d) recombination/tracking schema template, (e) SKILL.md assembly, (f) plain-repo sanity check** — not started. Note for step (d): four open questions across the existing reference docs (`reference/fragmented-employer-module.md` §10, `reference/signal-fusion-module.md` §3 and §7, `reference/verification-escalation-policy.md` §7) all converge on the same undecided piece — a closed confidence-label vocabulary for the tracking schema — and should be resolved together as one decision, not four.
+- **Next, per `decisions/0002-build-sequencing-strategy.md`** — not (d) directly. Two risk-first spikes first (architecture doc §1.5's subagent tiering/scheduled-tasks autonomy, and a real pilot of the case-4 signal-fusion mechanism — both currently at zero real-world validation per `internal/traceability.md`), plus an unblocked parallel track implementing architecture doc §2.3's algorithmic tier as an actual, unit-tested pure-function library — this repo's first real code. Only after the spikes: **(d) recombination/tracking schema template, (e) SKILL.md assembly, (f) plain-repo sanity check**. Note for step (d): four open questions across the existing reference docs (`reference/fragmented-employer-module.md` §10, `reference/signal-fusion-module.md` §3 and §7, `reference/verification-escalation-policy.md` §7) all converge on the same undecided piece — a closed confidence-label vocabulary for the tracking schema — and should be resolved together as one decision, not four.
 
 Update this list as work lands so a new session doesn't have to reconstruct status from `git log`.
