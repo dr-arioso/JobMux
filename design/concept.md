@@ -2,7 +2,7 @@
 
 **Purpose of this file.** This is the entry point for a new session working on JobMux — a reusable, open-source-able Claude Skill for structured job searching. This file states the current design as decided. It does not narrate how the design got here — no "an earlier draft assumed X, a later session corrected it." When a decision changes, rewrite the relevant section in place; don't append a dated correction on top of it. Alternatives that were seriously considered and rejected are kept, but as standing reasoning in their own "alternatives considered" material — stated flatly, not as a story about when they were rejected. Read this whole file before doing anything else. It intentionally does not carry over the personal details of the real search that motivated this project — treat this as a design brief, not a transcript.
 
-**Companion file:** `architecture.md` holds the actual system design — the four reusable layers and the format/infrastructure options. Read this file first for the why and the landscape; read the architecture doc next for the how.
+**Companion file:** `design/architecture.md` holds the actual system design — the four reusable layers and the format/infrastructure options. Read this file first for the why and the landscape; read the architecture doc next for the how.
 
 ## 1. Background
 
@@ -81,7 +81,7 @@ Decided. The name refers to the mechanism, not just the problem: a multiplexer t
 
 ## 6. Bootstrapping instructions for a new session
 
-1. Read this file and `architecture.md` in full first.
+1. Read this file and `design/architecture.md` in full first.
 2. If given access to the source project's folder, the highest-value files are the interview system prompt, the search-framework template, and the values-phase addendum (filenames evident from that folder's own index) — these hold the real elicitation and template-instantiation mechanics in more operational detail than these two files reproduce. Treat tracking/methodology files (ledger schema, re-check methodology notes) as secondary material for architecture doc §1.3–§1.4.
 3. Mine all of it for patterns, not verbatim content. Several parts of the source project are specific to one candidate's real personal situation (name, location, employer contact names/emails) and must not end up in anything meant for open-source release. When in doubt, generalize the pattern and drop the specific.
 4. The four active use cases (§4.1) are decided; confirm before drafting anything if circumstances have changed since this was written.

@@ -1,6 +1,6 @@
 # JobMux — Elicitation Layer (Reference Implementation)
 
-**Companion to `concept.md` and `architecture.md`.** Those files state the design as decided; this file is the first template-instantiation artifact built from that design (`concept.md` §6, step a). It is not a description of how the elicitation layer works — `architecture.md` §1.1 already does that. This is the fixed, human-reviewed text a model runs verbatim during a real interview and values pass: the actual prompts, question patterns, forbidden moves, and worked slot-filling examples. Where architecture.md states a rule, this file instantiates it as language a model says out loud to a candidate.
+**Companion to `design/concept.md` and `design/architecture.md`.** Those files state the design as decided; this file is the first template-instantiation artifact built from that design (`design/concept.md` §6, step a). It is not a description of how the elicitation layer works — `design/architecture.md` §1.1 already does that. This is the fixed, human-reviewed text a model runs verbatim during a real interview and values pass: the actual prompts, question patterns, forbidden moves, and worked slot-filling examples. Where `design/architecture.md` states a rule, this file instantiates it as language a model says out loud to a candidate.
 
 As with the two companion files: this file states the current template as decided. When the template changes, rewrite the relevant section in place. Worked examples throughout use invented, generic placeholder candidates — none of them are the real candidate who motivated this project, and none of the four job-type categories, geographic anchors, or industries from that search appear here. Where an example needs a concrete decision node, career-phase stop, or dimension, it uses a different shape each time specifically so this file doesn't quietly canonicalize one candidate's answers as a template default.
 
@@ -19,7 +19,7 @@ Slots are written `<like this>`. A slot is filled from the candidate's own words
 This frame commits the model to three forbiddens that hold for the entire interview:
 
 - **One question per turn.** Never stack two questions in one message, even two that feel related. If a candidate's answer surfaces a second question, hold it for the next turn.
-- **No market claims, no recommendations, while interviewing.** Not "there's probably demand for that near you," not "a lot of people in your position end up doing X," not naming an employer, an industry trend, or a typical salary range — even if true, even if it would reassure the candidate. This discipline is what keeps discovery a separate, later, evidence-gathering step (architecture.md §1.1); breaking it here contaminates that separation permanently for this candidate.
+- **No market claims, no recommendations, while interviewing.** Not "there's probably demand for that near you," not "a lot of people in your position end up doing X," not naming an employer, an industry trend, or a typical salary range — even if true, even if it would reassure the candidate. This discipline is what keeps discovery a separate, later, evidence-gathering step (`design/architecture.md` §1.1); breaking it here contaminates that separation permanently for this candidate.
 - **Confirmation counts; the brief said so does not.** A working hypothesis about a decision node is only promoted to "resolved" when the candidate has said something that directly confirms it, in their own words, not when it seems implied or when an assumption from setup would make the interview shorter.
 
 ### 1.2 Working hypotheses — stated up front, explicitly revisable
@@ -49,7 +49,7 @@ A **decision node** is a question whose answer would materially change which job
 
    > It sounds like this one's genuinely up in the air for you right now, and that's fine — I'll carry it forward as open and we'll build a plan that works either way, rather than forcing an answer.
 
-   A decision node resolved as open is written into the plan with a conditional recommendation per branch (concept.md §1, item 1) — this is a legitimate finding, never reframed later as an interview that didn't dig hard enough.
+   A decision node resolved as open is written into the plan with a conditional recommendation per branch (`design/concept.md` §1, item 1) — this is a legitimate finding, never reframed later as an interview that didn't dig hard enough.
 
 ### 1.4 Child decision nodes
 
@@ -87,7 +87,7 @@ Offer a small starter set of candidate priorities, adjusted for domain if the in
 
 ### 2.3 Determining shape — target, scalar, or polarity
 
-Shape is never assigned from a lookup keyed on the priority's name (architecture.md §1.1) — it's read off how the candidate actually talks about it. The model listens for the grammatical and logical shape of the candidate's own language:
+Shape is never assigned from a lookup keyed on the priority's name (`design/architecture.md` §1.1) — it's read off how the candidate actually talks about it. The model listens for the grammatical and logical shape of the candidate's own language:
 
 - **Target-shaped language** names a specific point or identity value and talks about closeness or match to it, not amount: "I want to end up in <specific place/role/industry>," "it needs to basically be <X>." → shape: **target**.
 - **Scalar-shaped language** talks about more-or-less along a single axis, often with an implied floor or ceiling: "the more of X the better, up to a point," "I need at least <N>," "past a certain amount it stops mattering." → shape: **scalar**.
@@ -127,13 +127,13 @@ Group confirmed priorities into named dimensions, proposing groupings rather tha
 
 ### 2.6 The pairwise tournament
 
-Run the tournament within each dimension first, then run a second tournament across dimensions themselves (architecture.md §1.1 — the same mechanism reused at a coarser grain).
+Run the tournament within each dimension first, then run a second tournament across dimensions themselves (`design/architecture.md` §1.1 — the same mechanism reused at a coarser grain).
 
 **Turn pattern (verbatim shape, slot-filled):**
 
 > Between <priority A> and <priority B> — if a job was great on one of these but only okay on the other, which one would you rather it be great on?
 
-Record each answer as a single pairwise result. Do not ask the candidate to rank the whole set directly, and do not ask for a numeric weight directly — the cardinal weight is derived afterward from the win-rate pattern via a Bradley-Terry-style conversion (architecture.md §1.1), not elicited as a number in conversation.
+Record each answer as a single pairwise result. Do not ask the candidate to rank the whole set directly, and do not ask for a numeric weight directly — the cardinal weight is derived afterward from the win-rate pattern via a Bradley-Terry-style conversion (`design/architecture.md` §1.1), not elicited as a number in conversation.
 
 **Stopping condition.** The tournament runs until a stable top two or three emerges — not a full sort of the tail. The model tracks this algorithmically (a comparison stops changing the current leader once enough pairs have been run) and stops asking once that stability is reached, rather than running every possible pair out of thoroughness:
 
@@ -149,7 +149,7 @@ Once every dimension's internal tournament is done, run the same pattern one lev
 
 ### 2.7 Reallocation, stated to the candidate
 
-The reallocation rule (architecture.md §1.1) is algorithmic — it never needs to be explained in mechanism to the candidate, only surfaced as its effect, at the moment a later change triggers it:
+The reallocation rule (`design/architecture.md` §1.1) is algorithmic — it never needs to be explained in mechanism to the candidate, only surfaced as its effect, at the moment a later change triggers it:
 
 > You just bumped <priority> up. That means the others in <dimension> shift down a bit to make room, in proportion to where they already stood — so <priority X> drops a little more than <priority Y> did, since X was weighted higher to begin with. Here's the new breakdown: <updated weights>. Want to adjust anything else, or leave it here?
 
@@ -165,17 +165,17 @@ A candidate can also remove a priority, qualification, or entire dimension from 
 
 ### 3.1 Category filters, generally
 
-A category filter applies when a candidate preference is a fixed, named set of discrete labels rather than a continuous scale or a single target — the candidate keeps a live acceptable subset plus a ranking of the accepted labels (architecture.md §1.1). The model introduces a category filter only once it's clear from the interview or values pass that a preference has this shape, not as a default step for every candidate.
+A category filter applies when a candidate preference is a fixed, named set of discrete labels rather than a continuous scale or a single target — the candidate keeps a live acceptable subset plus a ranking of the accepted labels (`design/architecture.md` §1.1). The model introduces a category filter only once it's clear from the interview or values pass that a preference has this shape, not as a default step for every candidate.
 
 **Turn pattern:**
 
 > For <filter name, e.g. employment type>, here's the full range: <label set>. Which of these would you actually consider right now, and — among the ones you'd consider — which would you take first if more than one were on the table?
 
-For filters with an existing external standard (employment type maps to schema.org `JobPosting.employmentType`; occupation maps to SOC; industry maps to NAICS — architecture.md §1.6), the candidate-facing language uses the plain-language labels; the underlying token is recorded for the evidence-gathering layer, never surfaced to the candidate in raw form.
+For filters with an existing external standard (employment type maps to schema.org `JobPosting.employmentType`; occupation maps to SOC; industry maps to NAICS — `design/architecture.md` §1.6), the candidate-facing language uses the plain-language labels; the underlying token is recorded for the evidence-gathering layer, never surfaced to the candidate in raw form.
 
 ### 3.2 Career phase — generalized pattern
 
-Career phase is a category filter whose labels describe what role a given opportunity plays in the candidate's career trajectory right now (architecture.md §1.1). **The stops themselves are discovered per candidate, the same way a decision node is discovered — never presented as a fixed universal scale.** Whether career phase matters at all, and how finely to stage it, is itself resolved as a decision node earlier in the interview, not assumed.
+Career phase is a category filter whose labels describe what role a given opportunity plays in the candidate's career trajectory right now (`design/architecture.md` §1.1). **The stops themselves are discovered per candidate, the same way a decision node is discovered — never presented as a fixed universal scale.** Whether career phase matters at all, and how finely to stage it, is itself resolved as a decision node earlier in the interview, not assumed.
 
 **Discovering the stops (verbatim pattern):**
 
@@ -191,7 +191,7 @@ Once stops are named, run the same acceptable-subset-plus-ranking pattern as any
 
 ### 3.3 The tractability check
 
-Run this check once the acceptable career-phase subset is set, specifically checking whether a stop that disclaims occupation/industry relevance (a pure-income stop) is in the accepted set (architecture.md §1.1):
+Run this check once the acceptable career-phase subset is set, specifically checking whether a stop that disclaims occupation/industry relevance (a pure-income stop) is in the accepted set (`design/architecture.md` §1.1):
 
 > You've said you'd consider <pure-income-type stop> — which makes sense, but it also means career phase alone won't narrow down *what* kind of job we're looking for at that end of the range. For that to work, something else needs to bound the search instead — like a location constraint, a schedule requirement, or a type of employer you'd rule in or out. Do you already have one of those in place, or is that actually still open too?
 
@@ -205,7 +205,7 @@ If nothing qualifies, this becomes a new decision node in its own right, fed bac
 
 ## 4. Qualifications
 
-Distinct from a priority: a qualification compares the candidate's own attested fact against a listing's stated requirement, with the cutoff supplied by the listing rather than the candidate (architecture.md §1.1). The model gathers the candidate's side of this comparison directly, without yet knowing what any specific listing requires:
+Distinct from a priority: a qualification compares the candidate's own attested fact against a listing's stated requirement, with the cutoff supplied by the listing rather than the candidate (`design/architecture.md` §1.1). The model gathers the candidate's side of this comparison directly, without yet knowing what any specific listing requires:
 
 > Are there any licenses, certifications, degrees, or minimum years of experience that you already have, or are working toward, that are worth me tracking? These matter because postings often set them as a strict minimum — meeting or missing one can decide whether a listing is even in play, separate from how good a fit it is otherwise.
 
@@ -219,7 +219,7 @@ Close by naming the asymmetry the candidate should expect later, so a future "un
 
 ## 5. Aptitudes
 
-Distinct from both a priority (what the candidate wants) and a qualification (a fact checked against a requirement): an aptitude is the candidate's own self-rated trait strength, nonpolar — rating one trait says nothing about another (architecture.md §1.1). This module is explicitly optional and self-report only:
+Distinct from both a priority (what the candidate wants) and a qualification (a fact checked against a requirement): an aptitude is the candidate's own self-rated trait strength, nonpolar — rating one trait says nothing about another (`design/architecture.md` §1.1). This module is explicitly optional and self-report only:
 
 > This last part's optional, and it's a bit different from what we've covered — instead of what you want, it's about what you're naturally strong at. Things like attention to detail, how well you handle a fast-changing or high-pressure environment, how independently you like to work, how naturally cooperative or team-oriented you are. Want to rate yourself on a few of these? It can help surface roles that fit your strengths even if you wouldn't have thought to look for them, but it's genuinely skippable if it doesn't feel useful.
 
@@ -237,8 +237,8 @@ Once §1–§5 are complete (or explicitly skipped where skippable), the model d
 
 > Here's everything I've got: <decision nodes and resolutions>, <dimensions and top priorities in each, with any thresholds or non-negotiable flags>, <career phase stops and current acceptable set/ranking>, <qualifications>, <aptitudes if given>. Everything here is something you can revise anytime just by telling me — nothing is locked in. Does this all sound right as a starting point?
 
-Only after this confirmation does the context pack (architecture.md §2.2) get generated from the resulting state.
+Only after this confirmation does the context pack (`design/architecture.md` §2.2) get generated from the resulting state.
 
 ## §7 — open question
 
-Architecture.md §1.1 specifies that the tournament "runs until a stable top two or three holds" but does not specify the exact stopping rule (e.g., how many consecutive pairwise comparisons without a leader change count as "stable," or how ties are broken when the tournament stops early). This file's §2.6 states the stopping condition to the candidate in plain language and defers the precise algorithmic threshold to the algorithmic tier (architecture.md §2.3), consistent with that section's own discipline that tournament-to-Bradley-Terry conversion is deterministic code, not a model judgment call — but the specific numeric stability criterion itself is not yet decided anywhere in the existing docs. Flagged here rather than guessed at silently; the next session touching architecture.md §2.3 or §1.1 should either fix a concrete rule (e.g., "stop once the top-ranked item hasn't changed across the last 2×N comparisons, N = current field size") or explicitly decide it's fine to leave as an implementation-time judgment call.
+`design/architecture.md` §1.1 specifies that the tournament "runs until a stable top two or three holds" but does not specify the exact stopping rule (e.g., how many consecutive pairwise comparisons without a leader change count as "stable," or how ties are broken when the tournament stops early). This file's §2.6 states the stopping condition to the candidate in plain language and defers the precise algorithmic threshold to the algorithmic tier (`design/architecture.md` §2.3), consistent with that section's own discipline that tournament-to-Bradley-Terry conversion is deterministic code, not a model judgment call — but the specific numeric stability criterion itself is not yet decided anywhere in the existing docs. Flagged here rather than guessed at silently; the next session touching `design/architecture.md` §2.3 or §1.1 should either fix a concrete rule (e.g., "stop once the top-ranked item hasn't changed across the last 2×N comparisons, N = current field size") or explicitly decide it's fine to leave as an implementation-time judgment call.
