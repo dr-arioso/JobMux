@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobmux"
+version = "0.1.0"
+description = "JobMux algorithmic tier — deterministic pure functions for architecture.md §2.3. No model calls; every function here is ordinary, testable software."
+requires-python = ">=3.10"
+readme = "jobmux/README.md"
+
+[tool.setuptools.packages.find]
+include = ["jobmux*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

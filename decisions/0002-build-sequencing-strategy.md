@@ -88,7 +88,7 @@ Option 1 is the only option that produces zero working software or empirical sig
 
 ## Action Items
 
-1. [ ] Implement `architecture.md` §2.3's algorithmic tier as a small pure-function library with a unit-test suite
+1. [x] Implement `architecture.md` §2.3's algorithmic tier as a small pure-function library with a unit-test suite — done, `jobmux/` (68 tests). Surfaced one open flag: `scoring.chebyshev_weighted_score()`'s formula is a first concrete instantiation of §1.1's required behavior, not a settled decision — see `jobmux/README.md`.
 2. [ ] Spike layer 1.5: one subagent call via the Agent tool's model override, one scheduled-tasks-triggered recheck, written up as findings (not shipped code)
 3. [ ] Pilot the case-4 fusion mechanism once, real or clearly-labeled-simulated, producing one of `reference/signal-fusion-module.md` §3's confidence-rated outcomes, written up as findings
 4. [ ] Revise `reference/verification-escalation-policy.md` §7 and `reference/signal-fusion-module.md` §7's open questions in light of what the fusion pilot actually surfaces
