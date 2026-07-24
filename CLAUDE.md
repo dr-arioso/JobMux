@@ -16,6 +16,12 @@ This repo lives in a Dropbox-synced folder. The mount allows creating and modify
 
 Each commit made this way still leaves one new stale `.lock` file behind, since git always tries and fails to clean up after itself — that's expected, not a sign something's wrong. Don't spend time trying to `rm` it; it can't be removed through this mount. The workaround above routes around each stuck file rather than needing it gone.
 
+## The mount blocks deletion generally — not just git's lock files
+
+The restriction described above isn't git-specific; it's a property of the Dropbox mount itself, and it's worth knowing before it costs time on some future task. Confirmed directly (2026-07-23, during the `design/`/`reference/` restructure): plain `mv` works fine on this mount — renaming or relocating a file is a legitimate write operation and always succeeded, including moving all six root-level docs into subdirectories in one pass. But `rm`, `unlink`, and Python's `os.remove()` all fail identically with `Operation not permitted`, regardless of which tool issues the call — this is a filesystem-level block, not something a different command happens to route around.
+
+**Practical implication:** reorganizing, renaming, or restructuring files from a sandbox session is safe and unrestricted. Actually deleting a file is not possible from here under any method — don't spend time retrying `rm` with different flags or tools if it fails once, the same way the git section above already says not to fight the stale `.lock` files. If a file genuinely needs to be gone rather than moved (a stray test artifact, a file created by mistake), the only fix is deleting it from the user's own machine, where the same Dropbox folder allows normal deletion. Leave it named plainly (don't bury it) and tell the user, rather than working around it silently.
+
 ## Never `git push` from this sandbox — and `git fetch`/`git pull` won't work either
 
 No credentials are available here: `git fetch` fails with `fatal: could not read Username for 'https://github.com': No such device or address`, and `git push` would fail the same way. Committing locally and stopping there is correct every time — leave push/pull for the user to run from their own machine.
