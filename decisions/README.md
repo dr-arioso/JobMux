@@ -1,6 +1,6 @@
 # JobMux — Architecture Decision Log
 
-Standing record of decisions that affect how the repo is organized or how work gets sequenced — distinct from `design/` (what JobMux is and how it works, decided as of now) and `reference/` (the fixed, human-reviewed text a model runs). An ADR here records a choice and the reasoning behind it at the time it was made; unlike `concept.md` and `architecture.md`, an accepted ADR is not rewritten in place when circumstances change — a later decision that changes course gets its own new ADR, which may mark an earlier one superseded.
+Standing record of decisions that affect how the repo is organized or how work gets sequenced — distinct from `design/` (what JobMux is and how it works, decided as of now) and `reference/` (the fixed, human-reviewed text a model runs). An ADR here records a choice and the reasoning behind it at the time it was made; unlike `design/concept.md` and `design/architecture.md`, an accepted ADR is not rewritten in place when circumstances change — a later decision that changes course gets its own new ADR, which may mark an earlier one superseded.
 
 | ADR | Title | Status |
 |---|---|---|

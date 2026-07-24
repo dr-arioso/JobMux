@@ -6,13 +6,13 @@
 
 ## Context
 
-Two facts about the project's actual state should drive how the remaining build steps get sequenced, more than `concept.md` §6's original suggested order does on its own:
+Two facts about the project's actual state should drive how the remaining build steps get sequenced, more than `design/concept.md` §6's original suggested order does on its own:
 
-First, nothing in this repo is runnable software yet. `elicitation.md`, `fragmented-employer-module.md`, `signal-fusion-module.md`, and `verification-escalation-policy.md` are prose a model follows at runtime, not code. The one part of the design that's ordinary, deterministic software — `architecture.md` §2.3's algorithmic tier (proportional reallocation, Bradley-Terry conversion, Chebyshev-style scoring, context-pack generation via event-log fold, date-diffing, cost-of-living ratio conversion) — hasn't been implemented at all.
+First, nothing in this repo is runnable software yet. `reference/elicitation.md`, `reference/fragmented-employer-module.md`, `reference/signal-fusion-module.md`, and `reference/verification-escalation-policy.md` are prose a model follows at runtime, not code. The one part of the design that's ordinary, deterministic software — `design/architecture.md` §2.3's algorithmic tier (proportional reallocation, Bradley-Terry conversion, Chebyshev-style scoring, context-pack generation via event-log fold, date-diffing, cost-of-living ratio conversion) — hasn't been implemented at all.
 
 Second, `internal/traceability.md` (not open-source material, but a legitimate internal check on the design) shows real validation is concentrated almost entirely in case 1, run manually, not through a Skill. Two pieces have **zero** real-world mileage: architecture §1.5 (subagent-based model tiering, scheduled-tasks-driven autonomy) and the actual fusion mechanism in `reference/signal-fusion-module.md` (the digital-trace failure mode is validated; reconciling it against an independent analog lead has never been run for real).
 
-`concept.md` §6 step 5's original order finishes (d) the recombination/tracking schema, then (e) `SKILL.md` assembly, then (f) a sanity check — all before any of this gets exercised. That's a reasonable default but it defers all empirical feedback to the very end, right where the two least-proven pieces most need early signal, and risks (d)'s schema getting finalized against assumptions about runtime behavior that haven't actually been tested.
+`design/concept.md` §6 step 5's original order finishes (d) the recombination/tracking schema, then (e) `SKILL.md` assembly, then (f) a sanity check — all before any of this gets exercised. That's a reasonable default but it defers all empirical feedback to the very end, right where the two least-proven pieces most need early signal, and risks (d)'s schema getting finalized against assumptions about runtime behavior that haven't actually been tested.
 
 ## Decision
 
@@ -28,7 +28,7 @@ Topology: narrow-and-deep for the two spikes (one unknown at a time, full depth,
 
 ## Options Considered
 
-### Option 1: Spec-complete-first (concept.md §6's literal order)
+### Option 1: Spec-complete-first (design/concept.md §6's literal order)
 
 | Dimension | Assessment |
 |---|---|
@@ -80,7 +80,7 @@ Option 1 is the only option that produces zero working software or empirical sig
 
 ## Consequences
 
-- `concept.md` §6 step 5 (suggested build order) is rewritten in place to reflect this sequencing, per that file's own stated discipline of revising decisions rather than narrating them.
+- `design/concept.md` §6 step 5 (suggested build order) is rewritten in place to reflect this sequencing, per that file's own stated discipline of revising decisions rather than narrating them.
 - (d)'s schema work is explicitly blocked on the two spikes' findings, not just the completion of (b)/(c) as the original order implied.
 - The algorithmic tier becomes the first real code in this repo — a meaningful shift from "100% design/reference prose" to a project with an actual, if small, working component.
 - Two pieces of throwaway spike code will exist briefly and then not ship — expected, not a sign of wasted effort, consistent with spike discipline.
@@ -88,9 +88,9 @@ Option 1 is the only option that produces zero working software or empirical sig
 
 ## Action Items
 
-1. [x] Implement `architecture.md` §2.3's algorithmic tier as a small pure-function library with a unit-test suite — done, `jobmux/` (68 tests). Surfaced one open flag: `scoring.chebyshev_weighted_score()`'s formula is a first concrete instantiation of §1.1's required behavior, not a settled decision — see `jobmux/README.md`.
+1. [x] Implement `design/architecture.md` §2.3's algorithmic tier as a small pure-function library with a unit-test suite — done, `jobmux/` (68 tests). Surfaced one open flag: `scoring.chebyshev_weighted_score()`'s formula is a first concrete instantiation of §1.1's required behavior, not a settled decision — see `jobmux/README.md`.
 2. [x] Spike layer 1.5: one subagent call via the Agent tool's model override, one scheduled-tasks-triggered recheck, written up as findings — done, 2026-07-24. A real Haiku-tier subagent, handed a real `jobmux/context_pack.py`-built pack, correctly respected `forbidden_scope` and reported "not found" rather than fabricating values, but surfaced a real gap: it didn't map a plain-language deadline onto `validThrough`. A real scheduled task (weekly cron) was created, verified via `list_scheduled_tasks`, and deleted rather than left running; the scheduler was found to add ~5.7 minutes of jitter to a cron fire. Actual unattended execution over time is still untested — that needs a task left running with Bill's explicit sign-off, not a same-session spike. Findings: `internal/layer15-spike-2026-07-24.md` (not committed).
 3. [x] Pilot the case-4 fusion mechanism once, real, using a real candidate from the Hannah-search ledger — done, 2026-07-23. Reached digital-side re-confirmation and a drafted, real analog contact; stopped there per `design/architecture.md` §1.2's no-irreversible-actions rule (the outreach itself is drafted, not sent, by this session). Produced a real confidence-rated outcome (**Analog-pending**, new) but not full two-signal reconciliation, which needs a real response first. Findings: `internal/signal-fusion-pilot-2026-07-23.md` (not committed — real employer specifics).
-4. [x] Revise `reference/signal-fusion-module.md` §3 and §7 in light of what the fusion pilot surfaced — done: added the **Analog-pending** outcome (§3), noted its recheck behavior may need to be event-based rather than calendar-based (§5), and broadened §7's open question accordingly. `reference/verification-escalation-policy.md` §7 already generically pointed to signal-fusion-module.md §3/§7 as one of its four convergent inputs and didn't need a content change.
+4. [x] Revise `reference/signal-fusion-module.md` §3 and §7 in light of what the fusion pilot surfaced — done: added the **Analog-pending** outcome (§3), noted its recheck behavior may need to be event-based rather than calendar-based (§5), and broadened §7's open question accordingly. `reference/verification-escalation-policy.md` §7 already generically pointed to reference/signal-fusion-module.md §3/§7 as one of its four convergent inputs and didn't need a content change.
 5. [ ] Write (d) the recombination/tracking schema template, informed by 1–4
 6. [ ] Proceed to (e) `SKILL.md` assembly and (f) the plain-repo sanity check

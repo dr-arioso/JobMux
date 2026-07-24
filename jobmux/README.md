@@ -3,7 +3,7 @@
 Deterministic pure functions implementing architecture.md §2.3's algorithmic
 tier — the parts of the design explicitly marked "no model call needed."
 This is the first real, runnable code in this repo; everything else
-(`elicitation.md`, the evidence-gathering modules, the verification/
+(`reference/elicitation.md`, the evidence-gathering modules, the verification/
 escalation policy) is prose a model follows at runtime, not software.
 
 Built per `decisions/0002-build-sequencing-strategy.md` action item 1, as an
