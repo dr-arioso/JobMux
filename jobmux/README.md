@@ -30,7 +30,7 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-93 tests, all passing as of the 2026-07-25 signal-fusion-formula update (72 from the prior terminology/persistence-taxonomy update, plus 21 covering `signal_fusion.py`'s reconciliation logic).
+99 tests, all passing as of the 2026-07-25 discounting/SUPERSEDED revision (93 from the initial signal-fusion-formula update, plus 6 covering per-signal reliability, the conflict threshold, and the SUPERSEDED rename).
 
 ## Open flags surfaced by this work
 
@@ -64,19 +64,30 @@ module ends up implementing.
 `signal_fusion.py`'s `reconcile()` (added 2026-07-25, architecture.md §1.4's
 evidence-signal-set reconciliation) implements the first concrete instantiation
 of the numeric-confidence derivation formula action item 5 of `decisions/
-0002-build-sequencing-strategy.md` left open. Two things about it are flagged
-the same way as scoring.py's formula and verification.py's matching mechanism
-— first instantiations, not settled decisions (see the module's own
-docstring for the full reasoning):
+0002-build-sequencing-strategy.md` left open. It went through two passes the
+same session, the second prompted by a design discussion that caught a real
+lossiness bug in the first (see the module's own docstring, "Revision" — the
+first version's CONTRADICTED state silently zeroed out a disagreeing signal
+instead of weighting it, in tension with architecture.md §2.4's "structurally
+impossible to lose a prior value" and with the JobMux name itself: a
+multiplexer combines channels, it doesn't discard them). Three things about
+the current version are flagged the same way as scoring.py's formula and
+verification.py's matching mechanism — first instantiations, not settled
+decisions:
 
 - **The confidence formula itself.** `reconcile()` combines every CONFIRMED
   signal's evidence via Dempster-Shafer combination (Shafer, 1976) over a
-  binary {available, unavailable} frame, rather than a hand-picked number
-  per outcome label. Two parameters (`confirmed_mass`, `digital_only_cap`)
-  are exposed rather than hardcoded, in the same spirit as
+  binary {available, unavailable} frame, with each signal discounted by its
+  own `reliability` coefficient (Shafer's own discounting operation) before
+  combination, rather than a hand-picked number per outcome label. Three
+  parameters (`confirmed_mass`, `conflict_threshold`, and each signal's own
+  `reliability`) are exposed rather than hardcoded, in the same spirit as
   `chebyshev_weighted_score`'s `top_k`/`lambda_` — open to being replaced
   with a different formula family by a future session touching
-  architecture.md §1.4, not a closed decision.
+  architecture.md §1.4, not a closed decision. The original `digital_only_cap`
+  parameter is gone — a lone digital confirmation's discount is now
+  whatever `reliability` its frontier-tier judgment assigned it, not a
+  flat constant applied to every digital-only case regardless of context.
 - **The `assertion` field.** architecture.md §1.4's decided signal shape is
   `(source, state, timestamp or quoted basis)` — it doesn't specify what a
   signal actually asserts, which reconciliation has to know to tell
@@ -86,6 +97,20 @@ docstring for the full reasoning):
   signal-fusion-module.md §3 names, but a future session could reasonably
   decide a richer vocabulary is needed — this is a gap-filling addition to
   the decided schema, not itself part of what architecture.md §1.4 settled.
+  Related, and still unaddressed: a disagreement over a specific attested-
+  attribute *value* (two different closing dates, say) is only captured
+  here via each source's downstream available/unavailable implication, not
+  the literal values in conflict — reconciling attribute-level facts
+  directly is a related but distinct extension of this same problem.
+- **CONTRADICTED renamed to SUPERSEDED, and narrowed** (architecture.md
+  §1.4) — reserved for a signal retired by a *later reading from the same
+  `source`* (matched by that source's stable ID for the listing), never
+  for a different source's disagreeing claim. Two different sources that
+  disagree both stay CONFIRMED and get reconciled by reliability weighting
+  instead of either one replacing the other. A repost occasionally getting
+  reissued a new ID by the aggregator even for the same underlying opening
+  is a real wrinkle this rename doesn't resolve — telling a genuine repost
+  from a supersession can itself need judgment, not a pure ID match.
 
 ## Scope note
 
