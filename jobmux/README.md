@@ -30,7 +30,7 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-99 tests, all passing as of the 2026-07-25 discounting/SUPERSEDED revision (93 from the initial signal-fusion-formula update, plus 6 covering per-signal reliability, the conflict threshold, and the SUPERSEDED rename).
+112 tests, all passing as of the 2026-07-25 `decisions/0003` action-items-1-2 update (99 from the discounting/SUPERSEDED revision, plus 13 covering hardened false-positive matching and SOC-code/`occupationalCategory` exclusion).
 
 ## Open flags surfaced by this work
 
@@ -51,15 +51,29 @@ every other open question in this project gets flagged rather than
 silently decided.
 
 `verification.FalsePositivePattern`/`is_confirmed_false_positive()` (added
-2026-07-25, architecture.md §1.2's persistence taxonomy) match a listing
-against a confirmed false-positive pattern via plain case-insensitive
-substring containment on the title or employer field — a first
-instantiation of the matching mechanism, not a settled decision. A
-SOC-code-misalignment-based mechanism (architecture.md §1.6) is a live
-candidate to replace substring matching with; *confirming* that a given
-result actually is a false positive, as opposed to a genuine near-miss,
-stays frontier-tier judgment regardless of which matching mechanism this
-module ends up implementing.
+2026-07-25, architecture.md §1.2's persistence taxonomy; revised same day
+per `decisions/0003-attribute-reconciliation-and-false-positive-matching.md`
+action items 1-2) no longer does plain case-insensitive substring
+containment — that had a real precision bug (a pattern like `"aid"`
+matched inside `"maid"`). Matching is now word-boundary containment on
+normalized text, with an optional fuzzy fallback (`difflib.SequenceMatcher`,
+stdlib) for phrasing drift, gated by a `min_fuzzy_pattern_length` guard
+specifically so short patterns can't reintroduce the same bug through the
+fuzzy path. `OccupationalCategoryExclusion`/`is_excluded_by_occupational_
+category()`/`is_confirmed_false_positive_with_category()` add the SOC-code
+path ADR-0003 recommended: schema.org's `JobPosting.occupationalCategory`
+(recommended by schema.org's own spec to hold an O*NET-SOC code) is checked
+first when a listing's structured data supplies one, falling back to the
+hardened text matching when it doesn't — not a separate classification
+pipeline, since architecture.md §2.3 already designates structured-data
+extraction as small-model-tier work. All of this remains a first
+instantiation of the matching mechanism, not a settled decision — moving
+pattern-matching itself to a small-model semantic check was considered and
+explicitly not adopted (ADR-0003) without concrete evidence this isn't
+enough, since it would be a real tier violation, not a same-tier
+refinement. *Confirming* that a given result actually is a false positive,
+as opposed to a genuine near-miss, stays frontier-tier judgment regardless
+of which matching mechanism this module implements.
 
 `signal_fusion.py`'s `reconcile()` (added 2026-07-25, architecture.md §1.4's
 evidence-signal-set reconciliation) implements the first concrete instantiation
@@ -97,11 +111,15 @@ decisions:
   signal-fusion-module.md §3 names, but a future session could reasonably
   decide a richer vocabulary is needed — this is a gap-filling addition to
   the decided schema, not itself part of what architecture.md §1.4 settled.
-  Related, and still unaddressed: a disagreement over a specific attested-
-  attribute *value* (two different closing dates, say) is only captured
-  here via each source's downstream available/unavailable implication, not
-  the literal values in conflict — reconciling attribute-level facts
-  directly is a related but distinct extension of this same problem.
+  Related, and deliberately deferred rather than addressed
+  (`decisions/0003-attribute-reconciliation-and-false-positive-matching.md`):
+  a disagreement over a specific attested-attribute *value* (two different
+  closing dates, say) is only captured here via each source's downstream
+  available/unavailable implication, not the literal values in conflict —
+  ADR-0003 records the recommended shape for reconciling attribute-level
+  facts directly (a generalized `reconcile_attribute()`) for whenever a
+  real recurring case actually calls for it, rather than building it
+  speculatively now.
 - **CONTRADICTED renamed to SUPERSEDED, and narrowed** (architecture.md
   §1.4) — reserved for a signal retired by a *later reading from the same
   `source`* (matched by that source's stable ID for the listing), never
@@ -121,8 +139,10 @@ tracking schema step (d) defines. Step (d) itself substantially landed
 2026-07-25 (`design/architecture.md` §1.2, §1.4 — see `decisions/
 0002-build-sequencing-strategy.md` action item 5), and as of
 `signal_fusion.py`'s addition (2026-07-25) its evidence-signal-set
-reconciliation is now real code here too, not just prose. One piece of
-(d) still isn't caught up in this module: the false-positive matching
-mechanism stays plain substring matching (`verification.py`) — SOC-code
-misalignment (architecture.md §1.6) remains a live, un-implemented
-candidate to replace or supplement it with (see the open flag above).
+reconciliation is now real code here too, not just prose. The false-
+positive matching mechanism (`verification.py`) is likewise caught up as
+of `decisions/0003`'s action items 1-2 (same day) — hardened text
+matching plus a SOC-code/`occupationalCategory` path, both real code now,
+not a flagged gap. What remains open is attribute-level reconciliation
+(`decisions/0003`'s deferred half) — not caught up because it was
+deliberately not built yet, not because it was missed.

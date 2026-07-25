@@ -186,15 +186,27 @@ evidence the other three aren't sufficient.
 
 ## Action Items
 
-1. [ ] Harden `verification.py`'s `FalsePositivePattern`/
+1. [x] Harden `verification.py`'s `FalsePositivePattern`/
    `is_confirmed_false_positive()`: normalize case/punctuation, match on
    word boundaries, add light fuzzy tolerance; fix the `"aid"`-matches-
    `"maid"` precision bug specifically; add regression tests for both the
-   hardening and the bug fix.
-2. [ ] Extend false-positive matching (and, more generally, occupation-
+   hardening and the bug fix. Done 2026-07-25: word-boundary containment
+   on normalized (lowercased, punctuation-collapsed) tokens, plus an
+   optional fuzzy fallback via `difflib.SequenceMatcher` (stdlib, no new
+   dependency), gated by a `min_fuzzy_pattern_length` guard — empirically
+   verified (`SequenceMatcher(None, "aid", "maid").ratio()` ≈ 0.857, higher
+   than some genuine phrasing-drift pairs) that the length guard, not the
+   similarity threshold alone, is what actually closes the bug. 13 new
+   tests.
+2. [x] Extend false-positive matching (and, more generally, occupation-
    category extraction) to consume schema.org's `occupationalCategory`
    when a listing's structured data supplies it, falling back to Action
-   Item 1's hardened substring matching when it doesn't.
+   Item 1's hardened substring matching when it doesn't. Done 2026-07-25:
+   `OccupationalCategoryExclusion`, `is_excluded_by_occupational_category()`,
+   `is_confirmed_false_positive_with_category()`, and
+   `purge_false_positives_with_category()` — the SOC-code path is checked
+   first when a listing supplies a code, but the text-pattern check always
+   still runs too (a present-but-not-yet-excluded code doesn't skip it).
 3. [ ] Not independently actionable yet: when `reference/board-heuristic-
    module.md` and `reference/board-ml-module.md` get written, scope their
    query construction to the source platform's own category/occupation
@@ -203,6 +215,6 @@ evidence the other three aren't sufficient.
    attribute-level-disagreement case is observed; the recommended shape
    (a generalized `reconcile_attribute()`, Issue 1 Option B) is recorded
    above for that future session.
-5. [ ] Once Action Items 1–2 land: update `jobmux/README.md`'s open-flags
-   section, `CLAUDE.md`'s build-order status, and this ADR's own
-   checkboxes.
+5. [x] `jobmux/README.md`'s open-flags section and `CLAUDE.md`'s
+   build-order status updated 2026-07-25 to reflect Action Items 1–2
+   landing; this ADR's own checkboxes updated in the same pass.
