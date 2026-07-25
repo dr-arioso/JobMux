@@ -6,3 +6,4 @@ Standing record of decisions that affect how the repo is organized or how work g
 |---|---|---|
 | [0001](0001-repo-directory-structure.md) | Repo directory structure | Accepted |
 | [0002](0002-build-sequencing-strategy.md) | Build sequencing, test strategy, and topology for remaining work | Accepted |
+| [0003](0003-attribute-reconciliation-and-false-positive-matching.md) | Attribute-level reconciliation (deferred) and the false-positive matching mechanism | Accepted |
