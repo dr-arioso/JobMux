@@ -2,10 +2,13 @@ from datetime import date
 
 from jobmux.verification import (
     ConstraintKind,
+    FalsePositivePattern,
     NearMiss,
     ThresholdDirection,
     diff_ledger_value,
+    is_confirmed_false_positive,
     is_listing_stale,
+    purge_false_positives,
     refilter_near_misses,
 )
 
@@ -81,3 +84,44 @@ def test_refilter_near_misses_qualification_kind_behaves_like_threshold():
     ]
     resurrected = refilter_near_misses(near_misses, "years_experience", new_required_value=2)
     assert resurrected == ["listing-1"]
+
+
+def _hospital_env_services_pattern():
+    return FalsePositivePattern(
+        pattern="environmental services",
+        field="title",
+        reason="hospital housekeeping department, not environmental science",
+        added_at=date(2026, 7, 25),
+    )
+
+
+def test_is_confirmed_false_positive_matches_title_case_insensitive():
+    fp = _hospital_env_services_pattern()
+    match = is_confirmed_false_positive("Environmental Services Technician", "Mankato Hospital", [fp])
+    assert match is fp
+
+
+def test_is_confirmed_false_positive_returns_none_when_no_pattern_matches():
+    fp = _hospital_env_services_pattern()
+    match = is_confirmed_false_positive("Environmental Scientist", "MN DNR", [fp])
+    assert match is None
+
+
+def test_is_confirmed_false_positive_matches_employer_field():
+    fp = FalsePositivePattern(
+        pattern="staffing solutions inc",
+        field="employer",
+        reason="generic staffing agency reposting unrelated roles",
+        added_at=date(2026, 7, 25),
+    )
+    match = is_confirmed_false_positive("Environmental Specialist", "Staffing Solutions Inc.", [fp])
+    assert match is fp
+
+
+def test_purge_false_positives_returns_only_matching_listing_ids():
+    fp = _hospital_env_services_pattern()
+    listings = [
+        ("listing-1", "Environmental Services Technician", "Mankato Hospital"),
+        ("listing-2", "Environmental Scientist", "MN DNR"),
+    ]
+    assert purge_false_positives(listings, [fp]) == ["listing-1"]

@@ -17,8 +17,8 @@ it depends on none of the design's still-unvalidated pieces.
 | `reallocation.py` | Proportional / equal-split / protect-top-K weight redistribution | §1.1 |
 | `tournament.py` | Pairwise win-counts → Bradley-Terry cardinal ranks | §1.1 |
 | `scoring.py` | Chebyshev-style weighted scoring; qualification met/unmet percentage | §1.1 |
-| `scheduling.py` | Volatility-tier recheck cadence; information-gain-per-cost action ordering | §1.4, §1.5 |
-| `verification.py` | Listing staleness date check; ledger value diffing; near-miss re-filtering | §1.3, §1.2 |
+| `scheduling.py` | Volatility-tier recheck cadence; information-gain-per-cost action ordering (architecture.md §1.5 designates this the eventual consumer of §1.4's numeric confidence value, once something produces one — the code itself is unchanged and doesn't reference confidence yet) | §1.4, §1.5 |
+| `verification.py` | Listing staleness date check; ledger value diffing; near-miss re-filtering; false-positive exclusion matching | §1.3, §1.2 |
 | `compensation.py` | Cost-of-living salary normalization | §1.2 |
 | `context_pack.py` | Event-log fold → the §2.2 context-pack JSON contract | §2.2, §2.4 |
 
@@ -29,9 +29,9 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-68 tests, all passing as of this module's initial commit.
+72 tests, all passing as of the 2026-07-25 terminology/persistence-taxonomy update (68 from this module's initial commit, plus 4 covering the new false-positive registry).
 
-## Open flag surfaced by this work
+## Open flags surfaced by this work
 
 `scoring.chebyshev_weighted_score()` implements architecture.md §1.1's
 required *behavior* ("penalizing the worst-scoring highly-ranked priority
@@ -49,10 +49,33 @@ revised by a future session touching architecture.md §1.1, the same way
 every other open question in this project gets flagged rather than
 silently decided.
 
+`verification.FalsePositivePattern`/`is_confirmed_false_positive()` (added
+2026-07-25, architecture.md §1.2's persistence taxonomy) match a listing
+against a confirmed false-positive pattern via plain case-insensitive
+substring containment on the title or employer field — a first
+instantiation of the matching mechanism, not a settled decision. A
+SOC-code-misalignment-based mechanism (architecture.md §1.6) is a live
+candidate to replace substring matching with; *confirming* that a given
+result actually is a false positive, as opposed to a genuine near-miss,
+stays frontier-tier judgment regardless of which matching mechanism this
+module ends up implementing.
+
+Similarly, architecture.md §1.4's evidence-signal-set reconciliation
+(deriving an outcome label and a numeric confidence value once each
+signal's own state is known) is decided as algorithmic-tier but has no
+implementation in this module yet — a candidate for a future
+`jobmux/signal_fusion.py`, not yet written.
+
 ## Scope note
 
 This module implements what architecture.md §2.3 explicitly lists as
-algorithmic. It does not implement, and should not be read as preempting,
-the recombination/tracking *schema* (step (d), still open) — `context_pack.py`
-builds the already-decided §2.2 JSON contract, which is a different,
-narrower thing than the persistence/tracking schema step (d) will define.
+algorithmic. `context_pack.py` builds the already-decided §2.2 JSON
+contract, which is a different, narrower thing than the persistence/
+tracking schema step (d) defines. Step (d) itself substantially landed
+2026-07-25 (`design/architecture.md` §1.2, §1.4 — see `decisions/
+0002-build-sequencing-strategy.md` action item 5), but as prose in the
+design docs, not as code in this module: the evidence-signal-set
+reconciliation and the false-positive matching mechanism it specifies are
+only partially implemented here (see the open flags above) — this
+module's own code should not be read as having caught up with everything
+(d) now decides.

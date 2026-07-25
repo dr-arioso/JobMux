@@ -34,7 +34,7 @@ def next_recheck_date(
     known_cycle_date: date | None = None,
     lead_days_before_cycle: int = 7,
 ) -> date:
-    """fragmented-employer-module.md §8: "where a funding or cycle date is
+    """adaptive-module.md §8: "where a funding or cycle date is
     discoverable for a given employer or sector..., schedule that
     employer's next check to land shortly before the relevant date, rather
     than defaulting to a generic calendar interval. Where no such date is

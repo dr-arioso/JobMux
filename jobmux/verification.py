@@ -1,5 +1,5 @@
 """Verification — architecture.md §1.3 (staleness dates, ledger diffing)
-and §1.2 (near-miss re-filtering).
+and §1.2 (near-miss re-filtering, false-positive exclusion matching).
 
 Every function here is deliberately narrow and mechanical. The actual
 judgment calls in verification-escalation-policy.md — which escalation
@@ -58,7 +58,7 @@ class ThresholdDirection(Enum):
 @dataclass(frozen=True)
 class NearMiss:
     """A rejected listing tagged with which constraint it failed and by
-    how much (architecture.md §1.2, fragmented-employer-module.md §7)."""
+    how much (architecture.md §1.2, adaptive-module.md §7)."""
     listing_id: str
     failed_constraint_name: str
     failed_constraint_kind: ConstraintKind
@@ -98,3 +98,67 @@ def refilter_near_misses(
         if passes:
             resurrected.append(nm.listing_id)
     return resurrected
+
+
+@dataclass(frozen=True)
+class FalsePositivePattern:
+    """A confirmed category-error exclusion (architecture.md §1.2) — not a
+    near-miss, a listing that was never a legitimate candidate for this
+    search at all (the canonical case: a hospital's "Environmental
+    Services" posting surfacing under an environmental-science search).
+
+    Confirming that a given result actually *is* a false positive, rather
+    than a genuine (if unusual) near-miss, is frontier-tier judgment
+    (architecture.md §2.3) and out of scope for this module. What's
+    algorithmic, and implemented below, is matching listings against a
+    pattern once it's already been confirmed.
+
+    `field` is "title" or "employer"; `pattern` is matched case-insensitive,
+    substring containment against that field. This is a first
+    instantiation of the matching mechanism, not a settled decision — a
+    more precise mechanism (e.g. SOC-code misalignment, architecture.md
+    §1.6) is a live candidate to replace substring matching with, the same
+    way jobmux/scoring.py's Chebyshev formula is flagged rather than
+    treated as final (see jobmux/README.md)."""
+    pattern: str
+    field: str
+    reason: str
+    added_at: date
+
+
+def is_confirmed_false_positive(
+    listing_title: str,
+    listing_employer: str,
+    patterns: list[FalsePositivePattern],
+) -> FalsePositivePattern | None:
+    """Return the first matching pattern, or None if the listing matches
+    none of them. Never persisted as a NearMiss regardless of match — a
+    false positive is excluded from the tracking store entirely, not
+    tagged and kept (architecture.md §1.2)."""
+    title_lower = listing_title.lower()
+    employer_lower = listing_employer.lower()
+    for fp in patterns:
+        haystack = title_lower if fp.field == "title" else employer_lower
+        if fp.pattern.lower() in haystack:
+            return fp
+    return None
+
+
+def purge_false_positives(
+    listings: list[tuple[str, str, str]],
+    patterns: list[FalsePositivePattern],
+) -> list[str]:
+    """architecture.md §1.2: a confirmed false-positive pattern is "applied
+    retroactively to purge anything already in the cache matching the
+    pattern." `listings` is a list of (listing_id, title, employer)
+    tuples; returns the listing_ids that match and should be purged.
+
+    The actual purge (deleting or tombstoning the row) is the caller's
+    job, not this function's — the same division of responsibility as
+    diff_ledger_value above: this module computes what changed, the caller
+    applies it to the real tracking store."""
+    return [
+        listing_id
+        for listing_id, title, employer in listings
+        if is_confirmed_false_positive(title, employer, patterns) is not None
+    ]

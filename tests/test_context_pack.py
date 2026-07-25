@@ -62,7 +62,7 @@ def _build_pack(state, **overrides):
         generated_at="2026-07-23T00:00:00Z",
         attested_schema=["employmentType", "baseSalary"],
         reference_anchors={"compensation_normalization": {"mode": "fixed_destination"}},
-        discovery_context={"active_modules": ["fragmented_small_employer"]},
+        discovery_context={"active_modules": ["adaptive"]},
         near_miss_vocabulary={"failure_reasons": ["threshold:<priority_name>"]},
         forbidden_scope="extract/tag only, no scoring, no ranking",
     )
