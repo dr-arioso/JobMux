@@ -38,14 +38,26 @@ from jobmux.scoring import (
     qualification_completion,
     weighted_sum_score,
 )
+from jobmux.signal_fusion import (
+    Assertion,
+    EvidenceSignal,
+    Outcome,
+    Reconciliation,
+    SignalSource,
+    SignalState,
+    reconcile,
+)
 from jobmux.tournament import PairwiseResult, bradley_terry_scores
 from jobmux.verification import (
     ConstraintKind,
+    FalsePositivePattern,
     LedgerDiff,
     NearMiss,
     ThresholdDirection,
     diff_ledger_value,
+    is_confirmed_false_positive,
     is_listing_stale,
+    purge_false_positives,
     refilter_near_misses,
 )
 
@@ -70,13 +82,23 @@ __all__ = [
     "chebyshev_weighted_score",
     "qualification_completion",
     "weighted_sum_score",
+    "Assertion",
+    "EvidenceSignal",
+    "Outcome",
+    "Reconciliation",
+    "SignalSource",
+    "SignalState",
+    "reconcile",
     "PairwiseResult",
     "bradley_terry_scores",
     "ConstraintKind",
+    "FalsePositivePattern",
     "LedgerDiff",
     "NearMiss",
     "ThresholdDirection",
     "diff_ledger_value",
+    "is_confirmed_false_positive",
     "is_listing_stale",
+    "purge_false_positives",
     "refilter_near_misses",
 ]

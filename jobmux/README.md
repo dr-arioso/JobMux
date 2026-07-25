@@ -21,6 +21,7 @@ it depends on none of the design's still-unvalidated pieces.
 | `verification.py` | Listing staleness date check; ledger value diffing; near-miss re-filtering; false-positive exclusion matching | §1.3, §1.2 |
 | `compensation.py` | Cost-of-living salary normalization | §1.2 |
 | `context_pack.py` | Event-log fold → the §2.2 context-pack JSON contract | §2.2, §2.4 |
+| `signal_fusion.py` | Evidence-signal-set reconciliation — outcome label + numeric confidence value | §1.4 |
 
 ## Running the tests
 
@@ -29,7 +30,7 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-72 tests, all passing as of the 2026-07-25 terminology/persistence-taxonomy update (68 from this module's initial commit, plus 4 covering the new false-positive registry).
+93 tests, all passing as of the 2026-07-25 signal-fusion-formula update (72 from the prior terminology/persistence-taxonomy update, plus 21 covering `signal_fusion.py`'s reconciliation logic).
 
 ## Open flags surfaced by this work
 
@@ -60,11 +61,31 @@ result actually is a false positive, as opposed to a genuine near-miss,
 stays frontier-tier judgment regardless of which matching mechanism this
 module ends up implementing.
 
-Similarly, architecture.md §1.4's evidence-signal-set reconciliation
-(deriving an outcome label and a numeric confidence value once each
-signal's own state is known) is decided as algorithmic-tier but has no
-implementation in this module yet — a candidate for a future
-`jobmux/signal_fusion.py`, not yet written.
+`signal_fusion.py`'s `reconcile()` (added 2026-07-25, architecture.md §1.4's
+evidence-signal-set reconciliation) implements the first concrete instantiation
+of the numeric-confidence derivation formula action item 5 of `decisions/
+0002-build-sequencing-strategy.md` left open. Two things about it are flagged
+the same way as scoring.py's formula and verification.py's matching mechanism
+— first instantiations, not settled decisions (see the module's own
+docstring for the full reasoning):
+
+- **The confidence formula itself.** `reconcile()` combines every CONFIRMED
+  signal's evidence via Dempster-Shafer combination (Shafer, 1976) over a
+  binary {available, unavailable} frame, rather than a hand-picked number
+  per outcome label. Two parameters (`confirmed_mass`, `digital_only_cap`)
+  are exposed rather than hardcoded, in the same spirit as
+  `chebyshev_weighted_score`'s `top_k`/`lambda_` — open to being replaced
+  with a different formula family by a future session touching
+  architecture.md §1.4, not a closed decision.
+- **The `assertion` field.** architecture.md §1.4's decided signal shape is
+  `(source, state, timestamp or quoted basis)` — it doesn't specify what a
+  signal actually asserts, which reconciliation has to know to tell
+  "agreeing" from "disagreeing." `signal_fusion.py` adds a fourth field
+  (`assertion`: available / unavailable) to make this computable. This
+  implementation found the binary sufficient for every outcome
+  signal-fusion-module.md §3 names, but a future session could reasonably
+  decide a richer vocabulary is needed — this is a gap-filling addition to
+  the decided schema, not itself part of what architecture.md §1.4 settled.
 
 ## Scope note
 
@@ -73,9 +94,10 @@ algorithmic. `context_pack.py` builds the already-decided §2.2 JSON
 contract, which is a different, narrower thing than the persistence/
 tracking schema step (d) defines. Step (d) itself substantially landed
 2026-07-25 (`design/architecture.md` §1.2, §1.4 — see `decisions/
-0002-build-sequencing-strategy.md` action item 5), but as prose in the
-design docs, not as code in this module: the evidence-signal-set
-reconciliation and the false-positive matching mechanism it specifies are
-only partially implemented here (see the open flags above) — this
-module's own code should not be read as having caught up with everything
-(d) now decides.
+0002-build-sequencing-strategy.md` action item 5), and as of
+`signal_fusion.py`'s addition (2026-07-25) its evidence-signal-set
+reconciliation is now real code here too, not just prose. One piece of
+(d) still isn't caught up in this module: the false-positive matching
+mechanism stays plain substring matching (`verification.py`) — SOC-code
+misalignment (architecture.md §1.6) remains a live, un-implemented
+candidate to replace or supplement it with (see the open flag above).
