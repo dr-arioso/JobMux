@@ -14,6 +14,12 @@ runtime, not software. See jobmux/README.md for module map and open flags.
 """
 
 from jobmux.compensation import normalize_compensation
+from jobmux.consistency import (
+    ImportanceMismatch,
+    StatedImportance,
+    detect_importance_mismatch,
+    detect_importance_mismatches,
+)
 from jobmux.context_pack import (
     Event,
     EventType,
@@ -47,6 +53,12 @@ from jobmux.signal_fusion import (
     SignalState,
     reconcile,
 )
+from jobmux.source_consent import (
+    ADR_0004_TOS_AMBIGUOUS_SOURCES,
+    SourceConsentExclusion,
+    is_excluded_by_source_consent,
+    purge_by_source_consent,
+)
 from jobmux.tournament import PairwiseResult, bradley_terry_scores
 from jobmux.verification import (
     ConstraintKind,
@@ -67,6 +79,10 @@ from jobmux.verification import (
 
 __all__ = [
     "normalize_compensation",
+    "ImportanceMismatch",
+    "StatedImportance",
+    "detect_importance_mismatch",
+    "detect_importance_mismatches",
     "Event",
     "EventType",
     "SessionState",
@@ -93,6 +109,10 @@ __all__ = [
     "SignalSource",
     "SignalState",
     "reconcile",
+    "ADR_0004_TOS_AMBIGUOUS_SOURCES",
+    "SourceConsentExclusion",
+    "is_excluded_by_source_consent",
+    "purge_by_source_consent",
     "PairwiseResult",
     "bradley_terry_scores",
     "ConstraintKind",
