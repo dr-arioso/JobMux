@@ -8,3 +8,4 @@ Standing record of decisions that affect how the repo is organized or how work g
 | [0002](0002-build-sequencing-strategy.md) | Build sequencing, test strategy, and topology for remaining work | Accepted |
 | [0003](0003-attribute-reconciliation-and-false-positive-matching.md) | Attribute-level reconciliation (deferred) and the false-positive matching mechanism | Accepted |
 | [0004](0004-board-heuristic-foundation-and-source-consent.md) | Board-heuristic's technical foundation, and consent for ToS-ambiguous sources | Accepted |
+| [0005](0005-elicitation-layer-topic-library-and-tournament-mechanism.md) | Elicitation layer restructuring — topic library, decision-node graduation, and tournament mechanism | Accepted |
