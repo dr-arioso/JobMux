@@ -227,18 +227,22 @@ isn't genuinely settled.
 
 ## Action Items
 
-1. [ ] Write `reference/board-heuristic-module.md`, naming `python-jobspy`
+1. [x] Write `reference/board-heuristic-module.md`, naming `python-jobspy`
    and `ats-scrapers` as its concrete technical foundation, per this ADR's
-   Decision section.
-2. [ ] Instantiate the ToS-ambiguous-source consent question as a concrete,
+   Decision section. Done 2026-07-25.
+2. [x] Instantiate the ToS-ambiguous-source consent question as a concrete,
    first-run step in that module — exact placement (elicitation.md vs.
    board-heuristic-module.md) to be confirmed when it's written, not
-   assumed here.
+   assumed here. Done 2026-07-25: placed in
+   `reference/board-heuristic-module.md` §3, not `reference/elicitation.md`
+   — reasoned there as a data-source disclosure tied to one module's
+   specific dependency, not a candidate job-search preference.
 3. [ ] Once board-heuristic code exists, add a `jobmux/`-tier exclusion
    filter for the candidate's consent answer — structurally similar to
    `verification.py`'s `OccupationalCategoryExclusion` pattern (a known
    list, checked before a listing is surfaced), not a new mechanism
-   invented from scratch.
+   invented from scratch. Specified but not yet built —
+   `reference/board-heuristic-module.md` §9 tracks this as still open.
 4. [ ] Revisit the "6 of 8 inferred, not independently confirmed"
    characterization if any of Apple/Amazon/Google/ByteDance/TikTok/Uber's
    actual `robots.txt`/ToS is ever directly checked — this ADR's language
