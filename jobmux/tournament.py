@@ -11,6 +11,13 @@ generalized Bradley-Terry models"). The tournament itself may stop early
 once a stable top two or three holds (elicitation.md §2.6) — this module
 doesn't assume every pair was compared, and handles a sparse or
 disconnected comparison graph explicitly rather than silently.
+
+`next_pair_to_compare` (decisions/0005 action item 3) is the pairing-
+selection half this module previously lacked: an information-gain-driven
+adaptive strategy (Chen, Bennett, Collins-Thompson & Horvitz, "Pairwise
+Ranking Aggregation in a Crowdsourced Setting," Crowd-BT, WSDM 2013),
+picking whichever not-yet-compared pair the current Bradley-Terry model is
+most uncertain about, rather than round-robin or a fixed schedule.
 """
 
 from __future__ import annotations
@@ -98,3 +105,59 @@ def bradley_terry_scores(
     for i in uncompared:
         result[i] = 0.0
     return result
+
+
+def next_pair_to_compare(
+    items: list[str],
+    results: list[PairwiseResult],
+) -> tuple[str, str] | None:
+    """Pick the next pair to ask the candidate about (decisions/0005
+    action item 3), rather than round-robin or a fixed pairing schedule.
+
+    Uses each not-yet-compared pair's current predicted win probability
+    under the Bradley-Terry model (from `bradley_terry_scores` run on
+    results so far, with an implicit uniform 1.0 prior for any item not
+    yet compared to anything). The pair whose predicted outcome is
+    closest to a 50/50 toss-up is the one the model is currently most
+    uncertain about, and is therefore the most informative one to ask
+    next — the standard optimal-design result for this model family
+    (Fisher information for a single Bradley-Terry observation is
+    proportional to p(1-p), maximized at p=0.5), and the criterion
+    Crowd-BT itself uses for online pair selection.
+
+    Deliberately does not re-offer an already-compared pair, unlike some
+    crowdsourced settings that re-query pairs across different
+    annotators: here there's exactly one candidate, so asking the same
+    forced-choice question twice would just be repetitive rather than
+    informative.
+
+    Returns `None` once every pair has already been compared — the
+    caller (the closing safety net, elicitation.md §2.6, per this
+    module's own decisions/0005) is expected to stop and, separately,
+    name any items this stopped-early tournament never got to.
+    """
+    if len(items) < 2:
+        return None
+
+    strengths = bradley_terry_scores(items, results) if results else {i: 1.0 for i in items}
+    # bradley_terry_scores gives an uncompared item strength 0.0, which
+    # would make every pair involving it look maximally "certain" (a
+    # one-sided predicted probability) rather than genuinely unknown —
+    # restore the same uniform 1.0 prior for any item still at its
+    # never-compared default, so a brand-new item is treated as an open
+    # question, not a predicted loser.
+    compared_pairs = {frozenset((r.winner, r.loser)) for r in results}
+    strengths = {i: (s if s > 0.0 else 1.0) for i, s in strengths.items()}
+
+    best_pair: tuple[str, str] | None = None
+    best_distance_from_toss_up = None
+    for idx, i in enumerate(items):
+        for j in items[idx + 1 :]:
+            if frozenset((i, j)) in compared_pairs:
+                continue
+            p_i = strengths[i] / (strengths[i] + strengths[j])
+            distance = abs(p_i - 0.5)
+            if best_distance_from_toss_up is None or distance < best_distance_from_toss_up:
+                best_distance_from_toss_up = distance
+                best_pair = (i, j)
+    return best_pair

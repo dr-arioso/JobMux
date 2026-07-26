@@ -59,7 +59,7 @@ from jobmux.source_consent import (
     is_excluded_by_source_consent,
     purge_by_source_consent,
 )
-from jobmux.tournament import PairwiseResult, bradley_terry_scores
+from jobmux.tournament import PairwiseResult, bradley_terry_scores, next_pair_to_compare
 from jobmux.verification import (
     ConstraintKind,
     FalsePositivePattern,
@@ -115,6 +115,7 @@ __all__ = [
     "purge_by_source_consent",
     "PairwiseResult",
     "bradley_terry_scores",
+    "next_pair_to_compare",
     "ConstraintKind",
     "FalsePositivePattern",
     "LedgerDiff",
