@@ -122,6 +122,36 @@ def test_prefers_the_most_uncertain_remaining_pair():
     assert "c" in pair or "d" in pair
 
 
+def test_prefers_a_boundary_relevant_pair_over_a_more_uncertain_bottom_pair():
+    # a and b are the clear top tier (each beat both c and d); c and d are
+    # the clear bottom tier with identical records against a and b, so
+    # c-vs-d is nearly an exact 50/50 toss-up -- more "globally uncertain"
+    # by raw distance-from-0.5 than a-vs-b, whose indirect records already
+    # favor a somewhat. With top_k=1 (boundary = top 2 estimated items),
+    # a-vs-b is the only remaining pair that could actually move the
+    # top-2 boundary; c-vs-d can't, no matter how uncertain it looks in
+    # isolation. The algorithm should pick a-vs-b anyway.
+    results = [
+        PairwiseResult("a", "c"), PairwiseResult("a", "c"),
+        PairwiseResult("a", "d"), PairwiseResult("a", "d"),
+        PairwiseResult("b", "c"),
+        PairwiseResult("b", "d"),
+    ]
+    assert next_pair_to_compare(["a", "b", "c", "d"], results, top_k=1) == ("a", "b")
+
+
+def test_falls_back_to_global_uncertainty_when_no_boundary_pair_remains():
+    # Once a-vs-b (the only boundary-relevant pair under top_k=1) is
+    # itself already compared, the only thing left is c-vs-d -- the
+    # fallback pool must still offer it rather than giving up early.
+    results = [
+        PairwiseResult("a", "c"), PairwiseResult("a", "d"),
+        PairwiseResult("b", "c"), PairwiseResult("b", "d"),
+        PairwiseResult("a", "b"),
+    ]
+    assert next_pair_to_compare(["a", "b", "c", "d"], results, top_k=1) == ("c", "d")
+
+
 def test_new_uncompared_item_treated_as_open_question_not_a_predicted_loser():
     # "isolated" has never been compared to anything, so it defaults to
     # bradley_terry_scores' 0.0 -- next_pair_to_compare must not treat

@@ -32,7 +32,7 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-138 tests, all passing as of the 2026-07-26 `decisions/0005` spike-implementation pass (132 from the `decisions/0004`-item-3 exclusion filter and the `decisions/0005`-item-5 mismatch detector, plus 6 covering the new Crowd-BT-style pairing selection in `tournament.py`).
+140 tests, all passing as of the 2026-07-26 `decisions/0005` spike-implementation pass and its same-day follow-up polish (132 from the `decisions/0004`-item-3 exclusion filter and the `decisions/0005`-item-5 mismatch detector, 6 from the initial Crowd-BT-style pairing selection in `tournament.py`, plus 2 more from the top-k-boundary-relevance refinement).
 
 ## Open flags surfaced by this work
 
@@ -145,9 +145,22 @@ for a dimension being too small for "near the top" to mean anything —
 fixed by requiring the dimension be bigger than the floor itself.
 `tournament.py`'s `next_pair_to_compare()` is the same pass's stretch goal
 (decisions/0005 action item 3) — implemented and tested, not just
-designed. `decisions/0005`'s other action items (revising
-`design/architecture.md` and `reference/elicitation.md` in place, and
-building the YAML topic library) remain open.
+designed, then revised once more the same session after a second look:
+the first cut's docstring overstated the citation (Crowd-BT tracks a full
+Bayesian posterior per item; what's actually implemented is a simpler
+point-estimate proxy sharing the same intuition, now stated as such
+rather than claimed as a direct reproduction), and the first cut also
+picked whichever pair was globally most uncertain with no regard for
+whether it was anywhere near the actual top-two-or-three boundary
+elicitation.md §2.6 cares about. A `top_k` parameter now prefers pairs
+touching the current top `top_k + 1` estimated items, falling back to
+global uncertainty only once no boundary-relevant pair remains — two new
+tests confirm this picks a boundary-relevant pair over a strictly more
+"uncertain" (closer to 50/50) pair that can't affect the boundary at all,
+and confirm the fallback still works once boundary pairs run out. 140
+tests passing (up from 138). `decisions/0005`'s other action items
+(revising `design/architecture.md` and `reference/elicitation.md` in
+place, and building the YAML topic library) remain open.
 
 ## Scope note
 

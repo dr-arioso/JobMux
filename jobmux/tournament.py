@@ -107,23 +107,52 @@ def bradley_terry_scores(
     return result
 
 
+def _distance_from_toss_up(strengths: dict[str, float], i: str, j: str) -> float:
+    p_i = strengths[i] / (strengths[i] + strengths[j])
+    return abs(p_i - 0.5)
+
+
 def next_pair_to_compare(
     items: list[str],
     results: list[PairwiseResult],
+    *,
+    top_k: int = 3,
 ) -> tuple[str, str] | None:
     """Pick the next pair to ask the candidate about (decisions/0005
     action item 3), rather than round-robin or a fixed pairing schedule.
 
-    Uses each not-yet-compared pair's current predicted win probability
-    under the Bradley-Terry model (from `bradley_terry_scores` run on
-    results so far, with an implicit uniform 1.0 prior for any item not
-    yet compared to anything). The pair whose predicted outcome is
-    closest to a 50/50 toss-up is the one the model is currently most
-    uncertain about, and is therefore the most informative one to ask
-    next — the standard optimal-design result for this model family
-    (Fisher information for a single Bradley-Terry observation is
-    proportional to p(1-p), maximized at p=0.5), and the criterion
-    Crowd-BT itself uses for online pair selection.
+    **What this is, honestly.** Chen, Bennett, Collins-Thompson & Horvitz's
+    Crowd-BT (WSDM 2013) — the citation decisions/0005 named for this
+    module — tracks a full Bayesian posterior per item and selects the
+    pair maximizing *expected posterior-variance reduction*. What's
+    actually implemented here is a simpler proxy sharing the same
+    intuition, not a reproduction of that machinery: it uses each
+    not-yet-compared pair's current predicted win probability under the
+    plain MM-fitted Bradley-Terry model (`bradley_terry_scores`), and
+    treats the pair closest to a 50/50 toss-up as the most uncertain —
+    the standard optimal-design result for this model family (Fisher
+    information for a single Bradley-Terry observation is proportional to
+    p(1-p), maximized at p=0.5). This is a real simplification, flagged
+    the same way this codebase flags every other first-instantiation
+    formula (`scoring.chebyshev_weighted_score`'s `top_k`/`lambda_`,
+    `signal_fusion.reconcile`'s discounting) — a future session could
+    reasonably replace the point-estimate proxy with genuine posterior
+    tracking if the difference turns out to matter in practice.
+
+    **`top_k` — why global uncertainty isn't quite the right target.**
+    elicitation.md §2.6's actual stopping goal is a *stable top two or
+    three*, not a fully-resolved ranking. Picking whichever pair is most
+    uncertain overall, with no regard for whether it's anywhere near that
+    boundary, can spend a comparison resolving two clearly-bottom-ranked
+    items exactly as readily as one that would actually move something
+    into or out of the top few. To target the boundary directly: pairs
+    where at least one item currently sits within the top `top_k + 1` of
+    the estimated ranking (the `+1` catches an item just outside the
+    cutoff that a single upset could still push in) are preferred, and
+    ranked among themselves by the same uncertainty measure; only once no
+    such boundary-relevant pair remains does this fall back to the most
+    uncertain pair anywhere in the remaining set, so this never leaves a
+    genuinely available comparison unconsidered.
 
     Deliberately does not re-offer an already-compared pair, unlike some
     crowdsourced settings that re-query pairs across different
@@ -146,18 +175,21 @@ def next_pair_to_compare(
     # restore the same uniform 1.0 prior for any item still at its
     # never-compared default, so a brand-new item is treated as an open
     # question, not a predicted loser.
-    compared_pairs = {frozenset((r.winner, r.loser)) for r in results}
     strengths = {i: (s if s > 0.0 else 1.0) for i, s in strengths.items()}
+    compared_pairs = {frozenset((r.winner, r.loser)) for r in results}
 
-    best_pair: tuple[str, str] | None = None
-    best_distance_from_toss_up = None
-    for idx, i in enumerate(items):
-        for j in items[idx + 1 :]:
-            if frozenset((i, j)) in compared_pairs:
-                continue
-            p_i = strengths[i] / (strengths[i] + strengths[j])
-            distance = abs(p_i - 0.5)
-            if best_distance_from_toss_up is None or distance < best_distance_from_toss_up:
-                best_distance_from_toss_up = distance
-                best_pair = (i, j)
-    return best_pair
+    remaining_pairs = [
+        (i, j)
+        for idx, i in enumerate(items)
+        for j in items[idx + 1 :]
+        if frozenset((i, j)) not in compared_pairs
+    ]
+    if not remaining_pairs:
+        return None
+
+    ranked_by_strength = sorted(items, key=lambda i: -strengths[i])
+    boundary_relevant = set(ranked_by_strength[: min(top_k + 1, len(ranked_by_strength))])
+    boundary_pairs = [p for p in remaining_pairs if p[0] in boundary_relevant or p[1] in boundary_relevant]
+
+    pool = boundary_pairs if boundary_pairs else remaining_pairs
+    return min(pool, key=lambda p: _distance_from_toss_up(strengths, *p))
