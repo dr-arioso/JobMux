@@ -15,13 +15,15 @@ it depends on none of the design's still-unvalidated pieces.
 | Module | Covers | architecture.md |
 |---|---|---|
 | `reallocation.py` | Proportional / equal-split / protect-top-K weight redistribution | §1.1 |
-| `tournament.py` | Pairwise win-counts → Bradley-Terry cardinal ranks | §1.1 |
+| `tournament.py` | Pairwise win-counts → Bradley-Terry cardinal ranks; `next_pair_to_compare()` (decisions/0005) picks the next pair via information-gain-driven adaptive pairing (Crowd-BT-style) rather than round-robin | §1.1 |
 | `scoring.py` | Chebyshev-style weighted scoring; qualification met/unmet percentage | §1.1 |
 | `scheduling.py` | Volatility-tier recheck cadence; information-gain-per-cost action ordering (architecture.md §1.5 designates this the eventual consumer of §1.4's numeric confidence value, once something produces one — the code itself is unchanged and doesn't reference confidence yet) | §1.4, §1.5 |
 | `verification.py` | Listing staleness date check; ledger value diffing; near-miss re-filtering; false-positive exclusion matching | §1.3, §1.2 |
 | `compensation.py` | Cost-of-living salary normalization | §1.2 |
 | `context_pack.py` | Event-log fold → the §2.2 context-pack JSON contract | §2.2, §2.4 |
 | `signal_fusion.py` | Evidence-signal-set reconciliation — outcome label + numeric confidence value | §1.4 |
+| `source_consent.py` | ToS-ambiguous-source exclusion filter, mechanical enforcement of a candidate's consent answer (decisions/0004 action item 3) | §1.2 |
+| `consistency.py` | Mechanical mismatch detection between a priority's stated importance and its tournament-derived rank (decisions/0005 action item 5) | §1.1 |
 
 ## Running the tests
 
@@ -30,7 +32,7 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-112 tests, all passing as of the 2026-07-25 `decisions/0003` action-items-1-2 update (99 from the discounting/SUPERSEDED revision, plus 13 covering hardened false-positive matching and SOC-code/`occupationalCategory` exclusion).
+138 tests, all passing as of the 2026-07-26 `decisions/0005` spike-implementation pass (132 from the `decisions/0004`-item-3 exclusion filter and the `decisions/0005`-item-5 mismatch detector, plus 6 covering the new Crowd-BT-style pairing selection in `tournament.py`).
 
 ## Open flags surfaced by this work
 
@@ -129,6 +131,23 @@ decisions:
   reissued a new ID by the aggregator even for the same underlying opening
   is a real wrinkle this rename doesn't resolve — telling a genuine repost
   from a supersession can itself need judgment, not a pure ID match.
+
+`source_consent.py` and `consistency.py` (added 2026-07-26, a token-budget-
+constrained autonomous pass implementing two of `decisions/0004`/`0005`'s
+still-open action items) are both deliberately narrow, mechanical modules
+shaped after an existing pattern rather than invented from scratch —
+`source_consent.py` mirrors `verification.py`'s `OccupationalCategoryExclusion`;
+`consistency.py` mirrors `diff_ledger_value`. `consistency.py`'s own test
+suite caught a real bug before commit: a `StatedImportance.LOW` priority
+landing in last place within a very small (size-2) dimension was being
+flagged as a false mismatch, since the floor threshold didn't yet account
+for a dimension being too small for "near the top" to mean anything —
+fixed by requiring the dimension be bigger than the floor itself.
+`tournament.py`'s `next_pair_to_compare()` is the same pass's stretch goal
+(decisions/0005 action item 3) — implemented and tested, not just
+designed. `decisions/0005`'s other action items (revising
+`design/architecture.md` and `reference/elicitation.md` in place, and
+building the YAML topic library) remain open.
 
 ## Scope note
 
