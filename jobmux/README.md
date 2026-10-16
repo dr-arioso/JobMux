@@ -24,6 +24,7 @@ it depends on none of the design's still-unvalidated pieces.
 | `signal_fusion.py` | Evidence-signal-set reconciliation — outcome label + numeric confidence value | §1.4 |
 | `source_consent.py` | ToS-ambiguous-source exclusion filter, mechanical enforcement of a candidate's consent answer (decisions/0004 action item 3) | §1.2 |
 | `consistency.py` | Mechanical mismatch detection between a priority's stated importance and its tournament-derived rank (decisions/0005 action item 5) | §1.1 |
+| `rate_limit.py` | Per-host pacing for live verification loads: bot-wall detection, jittered gaps, exponential cooldown after a block, per-session request cap. Pure — caller supplies the clock and the jitter draw | §1.3 |
 
 ## Running the tests
 
@@ -32,7 +33,7 @@ pip install pytest --break-system-packages   # or a normal venv
 pytest
 ```
 
-140 tests, all passing as of the 2026-07-26 `decisions/0005` spike-implementation pass and its same-day follow-up polish (132 from the `decisions/0004`-item-3 exclusion filter and the `decisions/0005`-item-5 mismatch detector, 6 from the initial Crowd-BT-style pairing selection in `tournament.py`, plus 2 more from the top-k-boundary-relevance refinement).
+171 tests, all passing as of 2026-10-15 (31 added with `rate_limit.py`; 140 before that, as of the 2026-07-26 `decisions/0005` pass).
 
 ## Open flags surfaced by this work
 
@@ -161,6 +162,32 @@ and confirm the fallback still works once boundary pairs run out. 140
 tests passing (up from 138). `decisions/0005`'s other action items
 (revising `design/architecture.md` and `reference/elicitation.md` in
 place, and building the YAML topic library) remain open.
+
+`rate_limit.INDEED_POLICY` (added 2026-10-15) comes from a single real
+observation, not a measured threshold. On the 2026-10-15 case-1 recheck,
+Indeed served about 30 headless-browser job-page loads (2-3 concurrent,
+~5 s apart) before switching every request to a bot wall, and the loop
+kept requesting into it. The policy's numbers (serial, 20-45 s jittered
+gaps, a 20-request session cap, a 15-minute first cooldown that doubles,
+stopping after 2 consecutive blocks) are deliberately conservative guesses
+around that one data point. Tune them from logged outcomes, not intuition.
+`BLOCK_BODY_MARKERS` is likewise an open list of wall wordings seen so far.
+Typical driver loop, with the I/O outside this module:
+
+```python
+state = {}
+for url in ordered_urls:          # ordered via scheduling.order_by_information_gain_per_cost
+    host, pol = host_of(url), policy_for(url)
+    st = state.get(host, HostState())
+    d = decide(st, pol, time.time())
+    if d.action is Action.STOP:   # leave the row as search-only / unable to verify
+        continue
+    if d.action is Action.WAIT:
+        time.sleep(d.not_before - time.time())
+    status, final_url, body = load(url)          # Playwright, etc.
+    sig = classify_response(status, final_url, body, url)
+    state[host] = record_response(st, pol, sig, time.time(), random.random())
+```
 
 ## Scope note
 
